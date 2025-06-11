@@ -1,151 +1,54 @@
-# Skip Hire Page Redesign
+# React + TypeScript + Vite
 
-## Overview
-This document explains the architectural decisions and implementation approach for the skip hire selection page redesign, focusing on maintainability, performance, and user experience.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Design Goals
+Currently, two official plugins are available:
 
-1. **Improved User Experience**:
-   - Clear visual hierarchy for skip options
-   - Responsive design for all devices
-   - Intuitive filtering and sorting
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-2. **Technical Excellence**:
-   - Type-safe React components
-   - Optimized rendering performance
-   - Clean, maintainable code structure
+## Expanding the ESLint configuration
 
-3. **API Resilience**:
-   - Graceful handling of incomplete API data
-   - Client-side enhancements where API is limited
-   - Clear documentation for future API improvements
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-## Key Decisions
-
-### 1. Component Architecture
-
-```tsx
-// Feature-based organization
-features/
-  skip-selection/
-    components/  // Dumb components
-    hooks/       // Custom hooks
-    types/       // Type definitions
-    index.tsx    // Smart parent component
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
 ```
 
-**Why**: 
-- Isolated feature development
-- Clear separation of concerns
-- Easier testing and maintenance
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-### 2. State Management
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-```tsx
-// Using React's built-in state management
-const [filterOption, setFilterOption] = useState("all");
-const [sortOption, setSortOption] = useState("latest");
-
-// Memoized derived state
-const processedSkips = useMemo(() => {
-  // Filtering and sorting logic
-}, [skips, filterOption, sortOption]);
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
 ```
-
-**Why**:
-- No external dependencies needed for current complexity
-- Optimal performance with memoization
-- Clear data flow
-
-### 3. API Data Handling
-
-```tsx
-interface SkipProps {
-  id: number;
-  size: string;
-  area: string | null;  // Explicit null handling
-  // ...other fields
-}
-
-const processApiSkips = (apiSkips: any[]): SkipProps[] => {
-  return apiSkips.map(skip => ({
-    ...skip,
-    size: `${skip.size} Yard`,  // Formatting
-    area: skip.area || null,    // Normalization
-    img_src: getSkipImage(skip.size) // Client-side enhancement
-  }));
-};
-```
-
-**Why**:
-- Type safety with TypeScript interfaces
-- Normalization of API data
-- Client-side enhancements where API is limited
-
-### 4. Pagination Approach
-
-```tsx
-// Client-side pagination
-const paginatedSkips = useMemo(() => (
-  processedSkips.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
-), [processedSkips, currentPage]);
-```
-
-**Why**:
-- API doesn't support pagination
-- Consistent user experience
-- Simple to implement with current data volume
-
-### 5. Image Handling Strategy
-
-```tsx
-// Client-side image mapping
-const skipImageMap: Record<string, string> = {
-  "4 Yard": "/images/skips/4-yard.jpg",
-  // ...
-};
-
-function getSkipImage(size: string): string {
-  return skipImageMap[size] || "/images/skips/default.jpg";
-}
-```
-
-**Why**:
-- API doesn't currently provide images
-- Maintain visual appeal while waiting for API updates
-- Easy to replace with API-sourced images later
-
-## Recommended API Improvements
-
-1. **Add Image Support**:
-```json
-{
-  "images": {
-    "thumbnail": "url",
-    "full": "url"
-  }
-}
-```
-
-2. **Pagination Support**:
-```json
-{
-  "data": [],
-  "pagination": {
-    "page": 1,
-    "totalPages": 5
-  }
-}
-```
-
-3. **Better Area Data**:
-```json
-{
-  "area": {
-    "name": "Toronto",
-    "available": true
-  }
-}
