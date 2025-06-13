@@ -6,16 +6,15 @@ import type { SkipProps } from "./skip-card";
 
 export const SkipFilters = ({
   skips,
-  filterOption,
-  setFilterOption,
-  loading
+  selectedFilters,
+  setSelectedFilters,
+  loading,
 }: {
   skips: SkipProps[];
-  filterOption: string;
-  setFilterOption: (value: string) => void;
+  selectedFilters: string[]; // Now an array
+  setSelectedFilters: (filters: string[]) => void;
   loading: boolean;
 }) => {
-
   const availableFilters = useMemo(() => {
     const sizes = new Set<string>();
     let hasRoadAllowed = false;
@@ -27,9 +26,17 @@ export const SkipFilters = ({
 
     return {
       sizes: Array.from(sizes).sort(),
-      hasRoadAllowed
+      hasRoadAllowed,
     };
   }, [skips]);
+
+  const toggleFilter = (filter: string) => {
+    setSelectedFilters(
+      selectedFilters.includes(filter)
+        ? selectedFilters.filter((f) => f !== filter)
+        : [...selectedFilters, filter]
+    );
+  };
 
   if (loading) {
     return (
@@ -48,36 +55,37 @@ export const SkipFilters = ({
       <div className="flex space-x-2 pb-2">
         <Button
           key="all"
-          variant={filterOption === "all" ? "default" : "outline"}
+          variant={selectedFilters.length === 0 ? "default" : "outline"}
           className="whitespace-nowrap rounded-full px-4"
-          onClick={() => setFilterOption("all")}
+          onClick={() => setSelectedFilters([])}
         >
           All
         </Button>
 
-        {/* Size filters */}
-        {availableFilters.sizes.map((size) => (
-          <Button
-            key={size}
-            variant={filterOption === size.toLowerCase().replace(' ', '_')
-              ? "default"
-              : "outline"}
-            className="whitespace-nowrap rounded-full px-4"
-            onClick={() => setFilterOption(size.toLowerCase().replace(' ', '_'))}
-          >
-            {size}
-          </Button>
-        ))}
+        {availableFilters.sizes.map((size) => {
+          const filterValue = size.toLowerCase().replace(" ", "_");
+          return (
+            <Button
+              key={size}
+              variant={
+                selectedFilters.includes(filterValue) ? "default" : "outline"
+              }
+              className="whitespace-nowrap rounded-full px-4"
+              onClick={() => toggleFilter(filterValue)}
+            >
+              {size}
+            </Button>
+          );
+        })}
 
-        {/* Road allowed filter (only shown if relevant) */}
         {availableFilters.hasRoadAllowed && (
           <Button
             key="road_allowed"
-            variant={filterOption === "road_allowed"
-              ? "default"
-              : "outline"}
+            variant={
+              selectedFilters.includes("road_allowed") ? "default" : "outline"
+            }
             className="whitespace-nowrap rounded-full px-4"
-            onClick={() => setFilterOption("road_allowed")}
+            onClick={() => toggleFilter("road_allowed")}
           >
             Road Allowed
           </Button>

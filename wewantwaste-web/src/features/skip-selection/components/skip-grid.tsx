@@ -4,7 +4,13 @@ import { useProgressStore } from "../../../stores/useProgressStore";
 import SkipCard, { type SkipProps } from "./skip-card";
 import { Button } from "../../../components/ui/button";
 
-export const SkipGrid = ({ skips, loading }: { skips: SkipProps[]; loading: boolean }) => {
+export const SkipGrid = ({
+  skips,
+  loading,
+}: {
+  skips: SkipProps[];
+  loading: boolean;
+}) => {
   const [selectedSkip, setSelectedSkip] = useState<SkipProps | null>(null);
   const setSkip = useProgressStore((state) => state.setSkip);
   const nextStep = useProgressStore((state) => state.nextStep);
@@ -24,7 +30,7 @@ export const SkipGrid = ({ skips, loading }: { skips: SkipProps[]; loading: bool
   };
 
   return (
-    <div className="px-2 bg-gray-50">
+    <div className="px-2 bg-off-white-50">
       <ScrollArea className="h-[360px] p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {skips.map((skip) => (
@@ -42,7 +48,7 @@ export const SkipGrid = ({ skips, loading }: { skips: SkipProps[]; loading: bool
         <Button
           onClick={handleSubmit}
           disabled={!selectedSkip}
-          className="my-4 text-foreground"
+          className="my-4 bg-warm-orange-500 hover:bg-warm-orange-400 text-foreground"
         >
           Confirm Selection
         </Button>
